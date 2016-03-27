@@ -1,39 +1,35 @@
 from sklearn import linear_model
 from sklearn import svm
 
-def logReg(Xtrain, Ytrain, Xval, Yval):
-	'''
-	best_C = tweakLogreg(Xtrain, Ytrain, Xval, Yval, 0, 1.5, 25)
-	print(best_C)
-	'''
+def logReg(Xtrain, Ytrain, Xval, Yval, Xtest, Ytest):
+	best_C = tweakLogreg(Xtrain, Ytrain, Xval, Yval, 2, 3, 15)
+	print("Best C = " + str(best_C))
 
-	alg = linear_model.LogisticRegression(C=7.5)
+	alg = linear_model.LogisticRegression(C=best_C)
 	alg.fit(Xtrain, Ytrain)
 
-	return [crossVal(alg, Xval, Yval), alg]
+	return [accuracy(alg, Xval, Yval), alg]
 
-def SVMSigmoid(Xtrain, Ytrain, Xval, Yval):
-	'''
-	best = tweakSVM(Xtrain, Ytrain, Xval, Yval, 0, 2, 5)
+def SVMSigmoid(Xtrain, Ytrain, Xval, Yval, Xtest, Ytest):
+	best = tweakSVM(Xtrain, Ytrain, Xval, Yval, 2, 3, 6)
 	best_C = best[0]
 	best_gamma = best[1]
-	print(best_C)
-	print(best_gamma)
-	'''
+	print("Best C = " + str(best_C))
+	print("Best gamma = " + str(best_gamma))
 
-	alg = svm.SVC(C=4, gamma=8)
+	alg = svm.SVC(C=best_C, gamma=best_gamma)
 	alg.fit(Xtrain, Ytrain)
 
-	return [crossVal(alg, Xval, Yval), alg]
+	return [accuracy(alg, Xtest, Ytest), alg]
  
-def crossVal(alg, Xval, Yval):
-	crossvalPreds = alg.predict(Xval)
-	crossvalResults = (crossvalPreds == Yval)
+def accuracy(alg, X, Y):
+	preds = alg.predict(X)
+	results = (preds == Y)
 	hits = 0
-	for hit in crossvalResults:
+	for hit in results:
 		if hit:
 			hits += 1
-	return hits / len(Yval)
+	return hits / len(Y)
 
 
 def tweakLogreg(Xtrain, Ytrain, Xval, Yval, bottom = 1, interval = 3, its = 5):
@@ -48,10 +44,10 @@ def tweakLogreg(Xtrain, Ytrain, Xval, Yval, bottom = 1, interval = 3, its = 5):
 		alg = linear_model.LogisticRegression(C=i)
 		alg.fit(Xtrain, Ytrain)
 
-		accuracy = crossVal(alg, Xval, Yval)
+		acc = accuracy(alg, Xval, Yval)
 
-		if accuracy > best_accuracy:
-			best_accuracy = accuracy
+		if acc > best_accuracy:
+			best_accuracy = acc
 			best_C = i
 
 	return best_C
@@ -72,10 +68,10 @@ def tweakSVM(Xtrain, Ytrain, Xval, Yval, bottom = 1, interval = 3, its = 5):
 			alg = svm.SVC(C=i, gamma=j)
 			alg.fit(Xtrain, Ytrain)
 
-			accuracy = crossVal(alg, Xval, Yval)
+			acc = accuracy(alg, Xval, Yval)
 
-			if accuracy > best_accuracy:
-				best_accuracy = accuracy
+			if acc > best_accuracy:
+				best_accuracy = acc
 				best_C = i
 				best_gamma = j
 

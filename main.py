@@ -31,14 +31,12 @@ Y = data[answer]
 #Divide the data into training and cross validation sets.
 from sklearn import cross_validation
 
-folds = cross_validation.KFold(data.shape[0], n_folds=4, random_state=1)
-Xtrain = Ytrain = Xval = Yval = []
-for train, test in folds:
-	Xtrain = X.iloc[train,:]
-	Ytrain = Y.iloc[train]
-	Xval = X.iloc[test,:]
-	Yval = Y.iloc[test]
+[Xtrainval, Ytrainval, Xtest, Ytest, folds1] = splitSet(X, Y, 5)
+[Xtrain, Ytrain, Xval, Yval, folds2] = splitSet(Xtrainval, Ytrainval, 4)
 
+# ----------------------------------
+# Algorithm: Run the algorithm.
+# ----------------------------------
 algChoice = None
 
 while (type(algChoice) != int or algChoice not in range(1,3)):
@@ -49,18 +47,17 @@ while (type(algChoice) != int or algChoice not in range(1,3)):
 
 if algChoice == 1:
 	# Logistic Regression
-	[accuracy, alg] = logReg(Xtrain, Ytrain, Xval, Yval)
+	[acc, alg] = logReg(Xtrain, Ytrain, Xval, Yval, Xtest, Ytest)
 elif algChoice == 2:
 	# SVM with Sigmoid Kernel
-	[accuracy, alg] = SVMSigmoid(Xtrain, Ytrain, Xval, Yval)
-else:
-	print("Error during Algorithm Choice")
-	sys.exit(0)
+	[acc, alg] = SVMSigmoid(Xtrain, Ytrain, Xval, Yval, Xtest, Ytest)
+
+print("Accuracy = " + str(acc))
 
 # ----------------------------------
 # Learning Curve: Plot a learning curve.
 # ----------------------------------
-learningCurve(alg, X, Y, folds)
+learningCurve(alg, Xtrainval, Ytrainval, folds2)
 
 
 # ----------------------------------
@@ -75,18 +72,18 @@ while (type(createSub) != int or createSub not in range(1,3)):
 		print("Incorrect input. Please enter either 1 or 2.")
 
 if createSub == 1:
-	test = pandas.read_csv("test.csv")
-	test["Sex"] = genderToBinary(test["Sex"])
-	test["Age"] = fillAgeGaps(data["Age"])
+	submSet = pandas.read_csv("test.csv")
+	submSet["Sex"] = genderToBinary(submSet["Sex"])
+	submSet["Age"] = fillAgeGaps(data["Age"])
 
 	# Normalize
 	for f in features:
-		test[f] = normalize(test[f])
+		submSet[f] = normalize(submSet[f])
 
-	Xtest = test[features]
-	testPredictions = alg.predict(Xtest)
+	Xsubm = submSet[features]
+	submPredictions = alg.predict(Xsubm)
 
 	pandas.DataFrame({
-	        	"PassengerId": test["PassengerId"],
-	          	"Survived": testPredictions
+	        	"PassengerId": submSet["PassengerId"],
+	          	"Survived": submPredictions
 	   		}).to_csv('submission' + str(math.floor(time.time())) + '.csv',index=False)

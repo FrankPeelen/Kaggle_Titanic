@@ -1,8 +1,19 @@
 import matplotlib.pyplot as plt
 from sklearn.naive_bayes import GaussianNB
 from sklearn.learning_curve import learning_curve
+from sklearn import cross_validation
 import pandas
 import numpy as np
+
+def splitSet(X, Y, n_folds, random_state = 1):
+	folds = cross_validation.KFold(X.shape[0], n_folds=n_folds, shuffle=True)
+	X1 = Y1 = X2 = Y2 = []
+	for train, test in folds:
+		X1 = X.iloc[train,:]
+		Y1 = Y.iloc[train]
+		X2 = X.iloc[test,:]
+		Y2 = Y.iloc[test]
+	return [X1, Y1, X2, Y2, folds]
 
 def learningCurve(alg, X, Y, folds):
 	plotLCurve = None
@@ -14,7 +25,7 @@ def learningCurve(alg, X, Y, folds):
 			print("Incorrect input. Please enter either 1 or 2.")
 
 	if plotLCurve == 1:
-		plot_learning_curve(alg, "Learning Curves", X, Y, (0.7, 1.01), cv=folds)
+		plot_learning_curve(alg, "Learning Curves", X, Y, (0.5, 1.01), cv=folds)
 		plt.show() 
 
 def plot_learning_curve(estimator, title, X, y, ylim=None, cv=None,
