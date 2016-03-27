@@ -1,6 +1,31 @@
 from sklearn import linear_model
 from sklearn import svm
 
+def logReg(Xtrain, Ytrain, Xval, Yval):
+	'''
+	best_C = tweakLogreg(Xtrain, Ytrain, Xval, Yval, 0, 1.5, 25)
+	print(best_C)
+	'''
+
+	alg = linear_model.LogisticRegression(C=7.5)
+	alg.fit(Xtrain, Ytrain)
+
+	return [crossVal(alg, Xval, Yval), alg]
+
+def SVMSigmoid(Xtrain, Ytrain, Xval, Yval):
+	'''
+	best = tweakSVM(Xtrain, Ytrain, Xval, Yval, 0, 2, 5)
+	best_C = best[0]
+	best_gamma = best[1]
+	print(best_C)
+	print(best_gamma)
+	'''
+
+	alg = svm.SVC(C=4, gamma=8)
+	alg.fit(Xtrain, Ytrain)
+
+	return [crossVal(alg, Xval, Yval), alg]
+ 
 def crossVal(alg, Xval, Yval):
 	crossvalPreds = alg.predict(Xval)
 	crossvalResults = (crossvalPreds == Yval)
